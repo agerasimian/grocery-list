@@ -1,0 +1,26 @@
+name: Supabase keep-alive
+
+# Pings the grocery-list database twice a week so the free-tier
+# Supabase project never hits the 7-day inactivity pause.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1,4" # 06:17 UTC every Monday and Thursday
+  workflow_dispatch: {} # allows manual runs from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query the database
+        env:
+          SUPABASE_URL: https://zrfvehnixtlfawbeuetm.supabase.co
+          # Anon (publishable) key — already public in index.html, safe to keep here
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyZnZlaG5peHRsZmF3YmV1ZXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODU4ODcsImV4cCI6MjA5MzE2MTg4N30.Gwg-YZbOfH2lsZPUzHXUHse7-FCTJwRsNuYBtgXVHU8
+        run: |
+          curl --fail --silent --show-error \
+            "$SUPABASE_URL/rest/v1/grocery_items?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --output /dev/null
+          echo "✅ Database pinged — project stays awake"
